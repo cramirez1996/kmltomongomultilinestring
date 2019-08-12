@@ -18,40 +18,20 @@ app.use(bodyParser.json());
 
 app.post('/convert', upload.single('file'), function (req, res) {
     var kml_file = new DOMParser().parseFromString(fs.readFileSync(req.file.path, 'utf8'));
-    var file_converted = tj.kml(kml_file)
+    var file_converted = tj.kml(kml_file, {
+        styles: true
+    })
     var output = [];
     file_converted.features.forEach((item) => {
+        item.geometry.coordinates.forEach((coordinate) => {
+            console.log(coordinate)
+            if (coordinate.length > 2) {
+                coordinate.splice(2);
+            }
+        });
         output.push(item.geometry.coordinates);
     })
-    console.log('Archivo Procesado', output);
-    // fs.readFile(req.file.path, (err, data) => {
-    //     var stringSql = data.toString()
-
-    //     var models = fs.readdirSync(path.resolve('ormModels'))
-    //     models.forEach(function (file) {
-    //         fs.unlinkSync(path.resolve('ormModels', file))
-    //     })
-
-    //     var controllers = fs.readdirSync(path.resolve('ormControllers'))
-    //     controllers.forEach(function (file) {
-    //         fs.unlinkSync(path.resolve('ormControllers', file))
-    //     })
-
-    //     Middleware.use(require('./middleware/1_entitiesToString')(stringSql));
-    //     Middleware.use(require('./middleware/2_entityStringToObject'));
-    //     Middleware.use(require('./middleware/3_ormModels'));
-    //     Middleware.use(require('./middleware/4_ormControllers'));
-
-    //     Middleware.go({}, (context) => {
-    //         res.send(context)
-
-
-    //     })
-
-
-
-    // });
-
+    res.send(output)
 });
 
 app.listen(3000, function () {
